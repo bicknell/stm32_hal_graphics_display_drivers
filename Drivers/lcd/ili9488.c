@@ -171,6 +171,10 @@ static  uint16_t  yStart, yEnd;
 #define SETCURSOR(x, y)                    ILI9488_SETCURSOR(x, y)
 
 #elif ILI9488_INTERFACE == 2
+#if DIYABLES_QUIRK == 1
+#define SETWINDOW(x1, x2, y1, y2)          ILI9488_SETWINDOW(x1, x2, y1, y2)
+#define SETCURSOR(x, y)                    ILI9488_SETCURSOR(x, y)
+#else
 #if ILI9488_ORIENTATION == 0
 #define SETWINDOW(x1, x2, y1, y2)          ILI9488_SETWINDOW(ILI9488_MAX_X - (x2), ILI9488_MAX_X - (x1), y1, y2)
 #define SETCURSOR(x, y)                    ILI9488_SETCURSOR(ILI9488_MAX_X - (x), y)
@@ -183,6 +187,7 @@ static  uint16_t  yStart, yEnd;
 #elif ILI9488_ORIENTATION == 3
 #define SETWINDOW(x1, x2, y1, y2)          ILI9488_SETWINDOW(ILI9488_MAX_X - (x2), ILI9488_MAX_X - (x1), ILI9488_MAX_Y - (y2), ILI9488_MAX_Y - (y1))
 #define SETCURSOR(x, y)                    ILI9488_SETCURSOR(ILI9488_MAX_X - (x), ILI9488_MAX_Y - (y))
+#endif
 #endif
 #endif
 
@@ -323,6 +328,9 @@ void ili9488_Init(void)
   LCD_IO_WriteCmd8MultipleData8(ILI9488_DFUNCTR, (uint8_t *)"\x02\x02", 2); // Display Function Control RGB/MCU Interface Control
   LCD_IO_WriteCmd8MultipleData8(ILI9488_IMGFUNCT, (uint8_t *)"\x01", 1); // Set Image Functio (Disable 24 bit data)
   LCD_IO_WriteCmd8MultipleData8(ILI9488_ADJCTR3, (uint8_t *)"\xA9\x51\x2C\x82", 4); // Adjust Control (D7 stream, loose)
+#if DIYABLES_QUIRK == 1
+  LCD_IO_WriteCmd8MultipleData8(ILI9488_INVON, NULL, 0);
+#endif
   LCD_Delay(5);
   LCD_IO_WriteCmd8MultipleData8(ILI9488_SLPOUT, NULL, 0); // Exit Sleep
   LCD_Delay(120);

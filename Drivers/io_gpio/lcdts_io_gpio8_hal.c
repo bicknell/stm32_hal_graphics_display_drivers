@@ -450,7 +450,7 @@ uint16_t TS_IO_GetAd(uint32_t chn)
 
   sConfig.Channel = chn;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   if (HAL_ADC_ConfigChannel(&TS_AD_HANDLE, &sConfig) == HAL_OK)
   {
     TS_IO_Delay(TS_AD_DELAY);
@@ -464,30 +464,73 @@ uint16_t TS_IO_GetAd(uint32_t chn)
   return (ret >> 2);
 }
 
+#ifdef TS_PRESSURE
 //-----------------------------------------------------------------------------
-/* return:
-   - 0 : touchscreen is not pressed
-   - 1 : touchscreen is pressed */
+/* Reads the pressure of the current touch.
+ *
+ * return:
+ * - uint8_t with the force of the touch, typically 0-3000.
+ */
 uint8_t TS_IO_DetectToch(void)
 {
-  uint8_t ret;
-  LL_GPIO_SetPinMode(LCD_D7_GPIO_Port, LCD_D7_Pin, LL_GPIO_MODE_INPUT); /* YM = D_INPUT */
-  LL_GPIO_SetPinMode(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_MODE_INPUT); /* YP = D_INPUT */
-  HAL_GPIO_WritePin(LCD_RS_GPIO_Port, LCD_RS_Pin, GPIO_PIN_RESET);      /* XM = 0 */
   HAL_GPIO_WritePin(LCD_D6_GPIO_Port, LCD_D6_Pin, GPIO_PIN_RESET);      /* XP = 0 */
-  LL_GPIO_SetPinPull(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_PULL_UP);    /* YP pullup resistor on */
-  TS_IO_Delay(TS_AD_DELAY);
-  if(HAL_GPIO_ReadPin(LCD_WR_GPIO_Port, LCD_WR_Pin))                    /* YP ? */
-    ret = 0;                                                            /* Touchscreen is not touch */
-  else
-    ret = 1;                                                            /* Touchscreen is touch */
-  LL_GPIO_SetPinPull(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_PULL_NO);    /* YP pullup resistor off */
-  HAL_GPIO_WritePin(LCD_RS_GPIO_Port, LCD_RS_Pin, GPIO_PIN_SET);        /* XM = 1 */
-  HAL_GPIO_WritePin(LCD_D6_GPIO_Port, LCD_D6_Pin, GPIO_PIN_SET);        /* XP = 1 */
-  LL_GPIO_SetPinMode(LCD_D7_GPIO_Port, LCD_D7_Pin, LL_GPIO_MODE_OUTPUT);/* YM = OUT */
+  HAL_GPIO_WritePin(LCD_D7_GPIO_Port, LCD_D7_Pin, GPIO_PIN_SET);        /* YM = 1 */
+
+  LL_GPIO_SetPinMode(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_MODE_ANALOG);/* YP = AN_INPUT */
+
+  int z = TS_IO_GetAd(TS_RS_ADCCH);                                     /* Ad Converter TS_RS_ADCCH */
+
   LL_GPIO_SetPinMode(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_MODE_OUTPUT);/* YP = OUT */
+
+  HAL_GPIO_WritePin(LCD_D7_GPIO_Port, LCD_RD_Pin, GPIO_PIN_SET);        /* YM = 1 */
+  HAL_GPIO_WritePin(LCD_D7_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);        /* YM = 1 */
+
+  // Keep spurious touches from triggering.
+  if (z > 10) {
+	  return z;
+  } else {
+	  return 0;
+  }
+}
+#else
+//-----------------------------------------------------------------------------
+uint8_t ts_DetectTouch(uint16_t DeviceAddr)
+{
+  static uint8_t ret = 0;
+  int32_t x1, x2, y1, y2, i;
+
+  ret = 0;
+  if(TS_IO_DetectToch())
+  {
+    x1 = TS_IO_GetX(); /* Get X */
+    y1 = TS_IO_GetY(); /* Get Y */
+    i = TOUCH_MAXREPEAT;
+    while(i--)
+    {
+      x2 = TS_IO_GetX(); /* Get X */
+      y2 = TS_IO_GetY(); /* Get Y */
+      if((ABS(x1 - x2) < TOUCH_FILTER) && (ABS(y1 - y2) < TOUCH_FILTER))
+      {
+        x1 = (x1 + x2) >> 1;
+        y1 = (y1 + y2) >> 1;
+        i = 0;
+        if(TS_IO_DetectToch())
+        {
+          tx = x1;
+          ty = y1;
+          ret = 1;
+        }
+      }
+      else
+      {
+        x1 = x2;
+        y1 = y2;
+      }
+    }
+  }
   return ret;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 /* read the X position */

@@ -2,7 +2,7 @@
    - 0: SPI half duplex (the mosi pin is bidirectional mode)
    - 1: SPI full duplex (write = mosi pin, read = miso pin)
    - 2: paralell 8 bit interface */
-#define ILI9488_INTERFACE     1
+#define ILI9488_INTERFACE     2
 
 /* Orientation:
    - 0: 320x480 micro-sd in the top (portrait)
@@ -30,3 +30,5 @@
 /* ILI9488 Size (physical resolution in default orientation) */
 #define  ILI9488_LCD_PIXEL_WIDTH   320
 #define  ILI9488_LCD_PIXEL_HEIGHT  480
+
+#define DIYABLES_QUIRK 1

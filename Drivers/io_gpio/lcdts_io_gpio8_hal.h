@@ -80,12 +80,15 @@
 
 #define TS_AD_DELAY           5000
 
+/* Touchscreen reports pressure of touch. */
+#define TS_PRESSURE       1
+
 /* Select the AD channels (check in the cube which AD channel is connected to the RS and WR pins */
-#define TS_RS_ADCCH           ADC_CHANNEL_13
-#define TS_WR_ADCCH           ADC_CHANNEL_10
+#define TS_RS_ADCCH           ADC_CHANNEL_4
+#define TS_WR_ADCCH           ADC_CHANNEL_1
 
 /* these constants can be defined with the application appTouchCalib.c */
-#define  TS_CINDEX            {-1409179, -21, -107208, 42542238, 136441, -1509, -512509626}
+#define  TS_CINDEX            {-266, 82209, -10704, -210366973, 231263, -29964, -591817031}
 
 /* The touch value that it still accepts as the same value */
 #define TOUCH_FILTER          32
