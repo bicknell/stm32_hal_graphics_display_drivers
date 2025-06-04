@@ -96,21 +96,14 @@ void BSP_TS_CalibCalc(ts_three_points * tp, ts_three_points * dp, ts_cindex * ci
 void BSP_TS_DisplaycoordCalc(uint16_t tx, uint16_t ty, uint16_t * dx, uint16_t * dy, uint16_t mx, uint16_t my)
 {
   int32_t x, y;
-  x = (cindex[1] * tx + cindex[2] * ty + cindex[3]) / cindex[0];
-  y = (cindex[4] * tx + cindex[5] * ty + cindex[6]) / cindex[0];
 
-  if(x < 0)
-    x = 0;
-  else if(x > mx)
-    x = mx;
-
-  if(y < 0)
-    y = 0;
-  else if(y > my)
-    y = my;
+  x = mx * (tx - 2560) / (2800 - 2560);
+  y = my * (ty - 2200) / (3750 - 2200);
 
   *dx = x;
   *dy = y;
+
+  printf("BSP_TS_DisplaycoordCalc(%u, %u, %u, %u, %u, %u)\r\n", tx, ty, *dx, *dy, mx, my);
 }
 
 //-----------------------------------------------------------------------------

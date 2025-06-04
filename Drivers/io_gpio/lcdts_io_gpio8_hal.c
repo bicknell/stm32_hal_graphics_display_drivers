@@ -470,23 +470,27 @@ uint16_t TS_IO_GetAd(uint32_t chn)
    - 1 : touchscreen is pressed */
 uint8_t TS_IO_DetectToch(void)
 {
-  uint8_t ret;
-  LL_GPIO_SetPinMode(LCD_D7_GPIO_Port, LCD_D7_Pin, LL_GPIO_MODE_INPUT); /* YM = D_INPUT */
-  LL_GPIO_SetPinMode(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_MODE_INPUT); /* YP = D_INPUT */
-  HAL_GPIO_WritePin(LCD_RS_GPIO_Port, LCD_RS_Pin, GPIO_PIN_RESET);      /* XM = 0 */
+  LL_GPIO_SetPinMode(LCD_RS_GPIO_Port, LCD_RS_Pin, LL_GPIO_MODE_ANALOG);/* XM = AN_INPUT */
+  LL_GPIO_SetPinMode(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_MODE_ANALOG);/* YP = AN_INPUT */
   HAL_GPIO_WritePin(LCD_D6_GPIO_Port, LCD_D6_Pin, GPIO_PIN_RESET);      /* XP = 0 */
-  LL_GPIO_SetPinPull(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_PULL_UP);    /* YP pullup resistor on */
-  TS_IO_Delay(TS_AD_DELAY);
-  if(HAL_GPIO_ReadPin(LCD_WR_GPIO_Port, LCD_WR_Pin))                    /* YP ? */
-    ret = 0;                                                            /* Touchscreen is not touch */
-  else
-    ret = 1;                                                            /* Touchscreen is touch */
-  //LL_GPIO_SetPinMode(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_PULL_NO);    /* YP pullup resistor off */
-  HAL_GPIO_WritePin(LCD_RS_GPIO_Port, LCD_RS_Pin, GPIO_PIN_SET);        /* XM = 1 */
-  HAL_GPIO_WritePin(LCD_D6_GPIO_Port, LCD_D6_Pin, GPIO_PIN_SET);        /* XP = 1 */
-  LL_GPIO_SetPinMode(LCD_D7_GPIO_Port, LCD_D7_Pin, LL_GPIO_MODE_OUTPUT);/* YM = OUT */
-  LL_GPIO_SetPinMode(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_MODE_OUTPUT);/* YP = OUT */
-  return ret;
+  HAL_GPIO_WritePin(LCD_D7_GPIO_Port, LCD_D7_Pin, GPIO_PIN_SET);        /* YM = 1 */
+
+  HAL_Delay(20);
+  int z1 = TS_IO_GetAd(TS_RS_ADCCH);
+  int z2 = TS_IO_GetAd(TS_WR_ADCCH);
+  int z = z2 - z1;
+
+  LL_GPIO_SetPinMode(LCD_RS_GPIO_Port, LCD_RS_Pin, LL_GPIO_MODE_OUTPUT);/* XM = D_OUTPUT */
+  LL_GPIO_SetPinMode(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_MODE_OUTPUT);/* YP = D_OUTPUT */
+
+  HAL_GPIO_WritePin(LCD_RD_GPIO_Port, LCD_RD_Pin, GPIO_PIN_SET);        /* RD = 1 */
+  HAL_GPIO_WritePin(LCD_RD_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);        /* CS = 0 */
+
+  if (z < 2500) {
+	  return 1;
+  } else {
+	  return 0;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -496,10 +500,10 @@ uint16_t TS_IO_GetX(void)
   uint16_t ret;
   LL_GPIO_SetPinMode(LCD_D7_GPIO_Port, LCD_D7_Pin, LL_GPIO_MODE_INPUT); /* YM = D_INPUT */
   LL_GPIO_SetPinMode(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_MODE_ANALOG);/* YP = AN_INPUT */
-  HAL_GPIO_WritePin(LCD_RS_GPIO_Port, LCD_RS_Pin, GPIO_PIN_SET);        /* XM = 1 */
-  HAL_GPIO_WritePin(LCD_D6_GPIO_Port, LCD_D6_Pin, GPIO_PIN_RESET);      /* XP = 0 */
+  HAL_GPIO_WritePin(LCD_RS_GPIO_Port, LCD_RS_Pin, GPIO_PIN_RESET);        /* XM = 0 */
+  HAL_GPIO_WritePin(LCD_D6_GPIO_Port, LCD_D6_Pin, GPIO_PIN_SET);      /* XP = 1 */
+  HAL_Delay(20);
   ret = TS_IO_GetAd(TS_WR_ADCCH);                                       /* Ad Converter TS_YP_ADCCH */
-  HAL_GPIO_WritePin(LCD_D6_GPIO_Port, LCD_D6_Pin, GPIO_PIN_SET);        /* XP = 1 */
   LL_GPIO_SetPinMode(LCD_D7_GPIO_Port, LCD_D7_Pin, LL_GPIO_MODE_OUTPUT);/* YM = OUT */
   LL_GPIO_SetPinMode(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_MODE_OUTPUT);/* YP = OUT */
   return ret;
@@ -514,8 +518,8 @@ uint16_t TS_IO_GetY(void)
   LL_GPIO_SetPinMode(LCD_D6_GPIO_Port, LCD_D6_Pin, LL_GPIO_MODE_INPUT); /* XP = D_INPUT */
   HAL_GPIO_WritePin(LCD_D7_GPIO_Port, LCD_D7_Pin, GPIO_PIN_RESET);      /* YM = 0 */
   HAL_GPIO_WritePin(LCD_WR_GPIO_Port, LCD_WR_Pin, GPIO_PIN_SET);        /* YP = 1 */
-  ret = TS_IO_GetAd(TS_RS_ADCCH);                                       /* Ad Converter TS_XM_ADCCH */
-  HAL_GPIO_WritePin(LCD_D7_GPIO_Port, LCD_D7_Pin, GPIO_PIN_SET);        /* YM = 1 */
+  HAL_Delay(20);
+  ret = 4096 - TS_IO_GetAd(TS_RS_ADCCH);                                       /* Ad Converter TS_XM_ADCCH */
   LL_GPIO_SetPinMode(LCD_RS_GPIO_Port, LCD_RS_Pin, LL_GPIO_MODE_OUTPUT);/* XM = OUT */
   LL_GPIO_SetPinMode(LCD_D6_GPIO_Port, LCD_D6_Pin, LL_GPIO_MODE_OUTPUT);/* XP = OUT */
   return ret;
