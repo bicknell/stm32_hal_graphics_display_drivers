@@ -450,7 +450,7 @@ uint16_t TS_IO_GetAd(uint32_t chn)
 
   sConfig.Channel = chn;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_15CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_13CYCLES_5;
   if (HAL_ADC_ConfigChannel(&TS_AD_HANDLE, &sConfig) == HAL_OK)
   {
     TS_IO_Delay(TS_AD_DELAY);
@@ -481,7 +481,7 @@ uint8_t TS_IO_DetectToch(void)
     ret = 0;                                                            /* Touchscreen is not touch */
   else
     ret = 1;                                                            /* Touchscreen is touch */
-  LL_GPIO_SetPinPull(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_PULL_NO);    /* YP pullup resistor off */
+  //LL_GPIO_SetPinMode(LCD_WR_GPIO_Port, LCD_WR_Pin, LL_GPIO_PULL_NO);    /* YP pullup resistor off */
   HAL_GPIO_WritePin(LCD_RS_GPIO_Port, LCD_RS_Pin, GPIO_PIN_SET);        /* XM = 1 */
   HAL_GPIO_WritePin(LCD_D6_GPIO_Port, LCD_D6_Pin, GPIO_PIN_SET);        /* XP = 1 */
   LL_GPIO_SetPinMode(LCD_D7_GPIO_Port, LCD_D7_Pin, LL_GPIO_MODE_OUTPUT);/* YM = OUT */
