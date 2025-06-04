@@ -164,7 +164,7 @@ union
 #define ILI9488_MAD_DATA_RIGHT_THEN_DOWN   (ILI9488_MAD_COLORMODE | ILI9488_MAD_X_RIGHT | ILI9488_MAD_Y_UP   | ILI9488_MAD_VERTICAL)
 #endif
 
-#if ILI9488_INTERFACE == 0 || ILI9488_INTERFACE == 1
+#if ILI9488_INTERFACE == 0 || ILI9488_INTERFACE == 1 || ILI9488_ROTATE == 1
 static  uint16_t  yStart, yEnd;
 
 #define SETWINDOW(x1, x2, y1, y2)          ILI9488_SETWINDOW(x1, x2, y1, y2)
@@ -330,6 +330,9 @@ void ili9488_Init(void)
   ili9488_FillRect(0, 0, ILI9488_MAX_X + 1, ILI9488_MAX_Y + 1, 0x0000);
   LCD_Delay(1);
   #endif
+  #if ILI9488_COLOR_INVERT == 1
+  LCD_IO_WriteCmd8MultipleData8(ILI9488_INVON, NULL, 0); // Invert colors on, which is off on this chip.
+  #endif
   LCD_IO_WriteCmd8MultipleData8(ILI9488_DISPON, NULL, 0); // Display on
   LCD_Delay(5);
   LCD_IO_WriteCmd8MultipleData8(ILI9488_MADCTL, &EntryRightThenDown, 1);
@@ -460,7 +463,7 @@ uint16_t ili9488_ReadPixel(uint16_t Xpos, uint16_t Ypos)
   */
 void ili9488_SetDisplayWindow(uint16_t Xpos, uint16_t Ypos, uint16_t Width, uint16_t Height)
 {
-  #if ILI9488_INTERFACE == 0 || ILI9488_INTERFACE == 1
+  #if ILI9488_INTERFACE == 0 || ILI9488_INTERFACE == 1 || ILI9488_ROTATE == 1
   yStart = Ypos; yEnd = Ypos + Height - 1;
   #endif
   SETWINDOW(Xpos, Xpos + Width - 1, Ypos, Ypos + Height - 1);

@@ -2,7 +2,19 @@
    - 0: SPI half duplex (the mosi pin is bidirectional mode)
    - 1: SPI full duplex (write = mosi pin, read = miso pin)
    - 2: paralell 8 bit interface */
-#define ILI9488_INTERFACE     1
+#define ILI9488_INTERFACE     2
+
+/* Turn off rotation translation for parallel interface.
+   - 0: Software performs translation.
+   - 1: Hardware performs translation.
+ */
+#define ILI9488_ROTATE 1
+
+/* Invert colors, some displays have this backwards.
+   - 0: No inversion.
+   - 1: Inversion.
+ */
+#define ILI9488_COLOR_INVERT 1
 
 /* Orientation:
    - 0: 320x480 micro-sd in the top (portrait)
